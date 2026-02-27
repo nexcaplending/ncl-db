@@ -1,16 +1,14 @@
 name: Update dashboard data (Box API)
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
-
-permissions:
-  contents: write
+  schedule:
+    - cron: "*/30 * * * *"   # runs every 30 minutes (optional)
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -20,33 +18,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps (PIN Box SDK v4)
+      - name: Install dependencies
         run: |
-          set -e
-          python -V
           python -m pip install --upgrade pip
-          # IMPORTANT: v10 replaces boxsdk; v4 includes boxsdk
-          python -m pip install "boxsdk[jwt]~=4.4.0" pandas openpyxl
-          python -c "from boxsdk import JWTAuth, Client; print('✅ boxsdk import OK (v4)')"
+          pip install pandas openpyxl boxsdk[jwt]
 
       - name: Build data.json from Box
         env:
           BOX_CONFIG_JSON: ${{ secrets.BOX_CONFIG_JSON }}
           BOX_FILE_ID: ${{ secrets.BOX_FILE_ID }}
+          BOX_USER_ID: ${{ secrets.BOX_USER_ID }}
           LO_NAME: "Anfal Kothawala"
         run: |
           set -e
           python tools/box_to_json_counts.py
 
-      - name: Commit & push if changed
+      - name: Commit and push if changed
         run: |
-          set -e
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add data.json
-            git commit -m "Auto-update data.json"
-            git push
-          else
-            echo "No changes to commit."
-          fi
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update data.json"
+          git push
