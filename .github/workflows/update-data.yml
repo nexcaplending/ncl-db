@@ -2,7 +2,7 @@ name: Update dashboard data (Box API)
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # every 5 minutes
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,6 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -21,13 +20,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps (verify boxsdk)
+      - name: Install deps (verify Box SDK import)
         run: |
           set -e
           python -V
           python -m pip install --upgrade pip
           python -m pip install "boxsdk[jwt]" pandas openpyxl
-          python -c "import boxsdk; print('✅ boxsdk import OK')"
+          python -c "from boxsdk import Client, JWTAuth; print('✅ boxsdk import OK')"
           python -c "import pandas; print('✅ pandas import OK')"
           python -c "import openpyxl; print('✅ openpyxl import OK')"
 
@@ -36,10 +35,6 @@ jobs:
           BOX_CONFIG_JSON: ${{ secrets.BOX_CONFIG_JSON }}
           BOX_FILE_ID: ${{ secrets.BOX_FILE_ID }}
           LO_NAME: "Anfal Kothawala"
-          # If your sheet headers differ, uncomment + set these:
-          # COL_LO: "Loan Officer"
-          # COL_STATUS: "Status"
-          # COL_CLOSING: "Closing Date"
         run: |
           set -e
           python tools/box_to_json_counts.py
