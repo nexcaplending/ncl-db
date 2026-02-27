@@ -20,15 +20,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps (verify Box SDK import)
+      - name: Install deps (PIN Box SDK v4)
         run: |
           set -e
           python -V
           python -m pip install --upgrade pip
-          python -m pip install "boxsdk[jwt]" pandas openpyxl
-          python -c "from boxsdk import Client, JWTAuth; print('✅ boxsdk import OK')"
-          python -c "import pandas; print('✅ pandas import OK')"
-          python -c "import openpyxl; print('✅ openpyxl import OK')"
+          # IMPORTANT: v10 replaces boxsdk; v4 includes boxsdk
+          python -m pip install "boxsdk[jwt]~=4.4.0" pandas openpyxl
+          python -c "from boxsdk import JWTAuth, Client; print('✅ boxsdk import OK (v4)')"
 
       - name: Build data.json from Box
         env:
