@@ -2,7 +2,7 @@ name: Update dashboard data (Box API)
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/5 * * * *" # every 5 minutes
   workflow_dispatch:
 
 permissions:
@@ -11,31 +11,42 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install deps (verify boxsdk)
         run: |
+          set -e
+          python -V
           python -m pip install --upgrade pip
-          pip install boxsdk[jwt] pandas openpyxl
+          python -m pip install "boxsdk[jwt]" pandas openpyxl
+          python -c "import boxsdk; print('✅ boxsdk import OK')"
+          python -c "import pandas; print('✅ pandas import OK')"
+          python -c "import openpyxl; print('✅ openpyxl import OK')"
 
       - name: Build data.json from Box
         env:
           BOX_CONFIG_JSON: ${{ secrets.BOX_CONFIG_JSON }}
           BOX_FILE_ID: ${{ secrets.BOX_FILE_ID }}
           LO_NAME: "Anfal Kothawala"
-          # If your headers differ, set them here, e.g.:
+          # If your sheet headers differ, uncomment + set these:
           # COL_LO: "Loan Officer"
           # COL_STATUS: "Status"
           # COL_CLOSING: "Closing Date"
-        run: python tools/box_to_json_counts.py
+        run: |
+          set -e
+          python tools/box_to_json_counts.py
 
       - name: Commit & push if changed
         run: |
+          set -e
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -43,5 +54,5 @@ jobs:
             git commit -m "Auto-update data.json"
             git push
           else
-            echo "No changes."
+            echo "No changes to commit."
           fi
