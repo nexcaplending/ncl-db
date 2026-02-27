@@ -1,1 +1,23 @@
-
+{
+  "updated_at": "2026-02-27 02:15:00",
+  "loan_officer": "Anfal Kothawala",
+  "closed_ytd": 12,
+  "status_counts": {
+    "Awaiting CTC": 3,
+    "Clearing Conditions": 6
+  },
+  "rows": [
+    {
+      "borrower": "Jaya Merchant",
+      "loan_amount": "$410,000",
+      "status": "Clearing Conditions",
+      "closing_date": "2026-03-06"
+    },
+    {
+      "borrower": "Mariam Lakhani",
+      "loan_amount": "$395,000",
+      "status": "Awaiting CTC",
+      "closing_date": "2026-03-01"
+    }
+  ]
+}
